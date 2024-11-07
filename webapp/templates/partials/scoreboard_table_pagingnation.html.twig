@@ -103,8 +103,6 @@
     {% set medalCount = 0 %}
     {% set totalTeams = scores|length %}
 
-    {# 獲取當前頁碼，預設為 1 #}
-    {% set currentPage = (app.request.query.get('page', 3) | round(0, 'floor')) %}
 
     {% if page_team_nums == 1 %}
         {# not pagination, display all team #}
@@ -112,10 +110,30 @@
     {% else %}
         {# pagination #}
         {% set teamsPerPage = page_team_nums %}
+        {% if public or jury %}
+            {% set currentPage = (app.request.query.get('page', 1) | round(0, 'floor')) %}
+        {% else %}
+            {% if myTeamId is defined %}
+                {% set teamIndex = null %}
+                {% for score in scores %}
+                    {% if score.team.teamid == myTeamId %}
+                        {% set teamIndex = loop.index0 %}
+                    {% endif %}
+                {% endfor %}
+                {% if teamIndex is not null %}
+                    {% set currentPage = (teamIndex / teamsPerPage) | round(0, 'floor') + 1 %}
+                {% else %}
+                    {% set currentPage = 1 %}
+                {% endif %}
+            {% else %}
+                {% set currentPage = 1 %}
+            {% endif %}
+        {% endif %}
         {% set totalPages = (totalTeams / teamsPerPage) | round(0, 'ceil') %}
         {% set start = (currentPage - 1) * teamsPerPage %}
         {% set scoresForCurrentPage = scores | slice(start, teamsPerPage) %}
     {% endif %}
+
 
     {% for score in scoresForCurrentPage %}
         {% set classes = [] %}
