@@ -159,7 +159,7 @@
             <br/>
         {% endif %} {# not static and filterValues*length>1 #}
 
-        {% include 'partials/scoreboard_table.html.twig' with {displayRank: true, showLegends: true} %}
+        {% include 'partials/scoreboard_table_pagingnation.html.twig' with {displayRank: true, showLegends: true} %}
 
     {% endif %} {# not scoreboard is null and not jury #}
 

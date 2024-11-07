@@ -176,6 +176,17 @@
 -   category: Display
     description: Options related to the DOMjudge user interface.
     items:
+        -   name: show_page_team_nums
+            type: int
+            default_value: 1
+            public: false
+            description: Limit the number of teams on a page.
+            options:
+                1: No limit
+                50: 5
+                100: 100
+                200: 200
+                1000: 1000
         -   name: show_pending
             type: bool
             default_value: true
