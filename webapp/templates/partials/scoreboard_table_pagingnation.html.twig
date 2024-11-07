@@ -121,7 +121,11 @@
                     {% endif %}
                 {% endfor %}
                 {% if teamIndex is not null %}
-                    {% set currentPage = (teamIndex / teamsPerPage) | round(0, 'floor') + 1 %}
+                    {% if app.request.query.get('page') is not null %}
+                        {% set currentPage = (app.request.query.get('page') | round(0, 'floor')) %}
+                    {% else %}
+                        {% set currentPage = (teamIndex / teamsPerPage) | round(0, 'floor') + 1 %}
+                    {% endif %}
                 {% else %}
                     {% set currentPage = 1 %}
                 {% endif %}
