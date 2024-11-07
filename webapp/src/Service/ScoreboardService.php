@@ -899,6 +899,7 @@ class ScoreboardService
             $data['showTeamSubmissions']  = $this->config->get('show_teams_submissions');
             $data['scoreInSeconds']       = $this->config->get('score_in_seconds');
             $data['maxWidth']             = $this->config->get('team_column_width');
+            $data['page_team_nums']       = $this->config->get('show_page_team_nums');
         }
 
         if ($request && $request->isXmlHttpRequest()) {

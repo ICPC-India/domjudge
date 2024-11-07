@@ -183,7 +183,8 @@
             description: Limit the number of teams on a page.
             options:
                 1: No limit
-                50: 5
+                5: 5
+                25: 25
                 100: 100
                 200: 200
                 1000: 1000

@@ -101,16 +101,22 @@
     {% set previousTeam = null %}
     {% set backgroundColors = {"#FFFFFF": 1} %}
     {% set medalCount = 0 %}
-    {% set teamsPerPage = 200 %}
     {% set totalTeams = scores|length %}
-    {% set totalPages = (totalTeams / teamsPerPage) | round(0, 'ceil') %}
 
     {# 獲取當前頁碼，預設為 1 #}
     {% set currentPage = (app.request.query.get('page', 3) | round(0, 'floor')) %}
 
-    {# 計算要顯示的隊伍範圍 #}
-    {% set start = (currentPage - 1) * teamsPerPage %}
-    {% set scoresForCurrentPage = scores | slice(start, teamsPerPage) %}
+    {% if page_team_nums == 1 %}
+        {# not pagination, display all team #}
+        {% set scoresForCurrentPage = scores %}
+    {% else %}
+        {# pagination #}
+        {% set teamsPerPage = page_team_nums %}
+        {% set totalPages = (totalTeams / teamsPerPage) | round(0, 'ceil') %}
+        {% set start = (currentPage - 1) * teamsPerPage %}
+        {% set scoresForCurrentPage = scores | slice(start, teamsPerPage) %}
+    {% endif %}
+
     {% for score in scoresForCurrentPage %}
         {% set classes = [] %}
         {% if score.team.category.sortorder != previousSortOrder %}
@@ -300,45 +306,47 @@
     {% include 'partials/scoreboard_summary.html.twig' with {sortOrder: previousSortOrder} %}
     </tbody>
 </table>
-<!-- Pagination Controls -->
-<div class="pagination-controls center">
-    <form action="" method="get" style="display: inline-block;">
-        <!-- Preserve other query parameters -->
-        {% for key, value in app.request.query.all %}
+{% if page_team_nums != 1 %}
+    <!-- Pagination Controls -->
+    <div class="pagination-controls center">
+        <form action="" method="get" style="display: inline-block;">
+            <!-- Preserve other query parameters -->
+            {% for key, value in app.request.query.all %}
+                {% if key != 'page' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+            <label for="page">Jump to page:</label>
+            <select id="page" name="page">
+                {% for pageNum in 1..totalPages %}
+                    <option value="{{ pageNum }}" {% if pageNum == currentPage %}selected{% endif %}>
+                        {{ pageNum }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Go</button>
+        </form>
+        <p>Page {{ currentPage }} of {{ totalPages }}</p>
+    </div>
+
+    <!-- Pagination Links -->
+    <div class="pagination-links">
+        {% set queryParams = app.request.query.all %}
+        {% set queryString = '' %}
+        {% for key, value in queryParams %}
             {% if key != 'page' %}
-                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% set queryString = queryString ~ key ~ '=' ~ value ~ '&' %}
             {% endif %}
         {% endfor %}
-        <label for="page">Jump to page:</label>
-        <select id="page" name="page">
-            {% for pageNum in 1..totalPages %}
-                <option value="{{ pageNum }}" {% if pageNum == currentPage %}selected{% endif %}>
-                    {{ pageNum }}
-                </option>
-            {% endfor %}
-        </select>
-        <button type="submit">Go</button>
-    </form>
-    <p>Page {{ currentPage }} of {{ totalPages }}</p>
-</div>
 
-<!-- Pagination Links -->
-<div class="pagination-links">
-    {% set queryParams = app.request.query.all %}
-    {% set queryString = '' %}
-    {% for key, value in queryParams %}
-        {% if key != 'page' %}
-            {% set queryString = queryString ~ key ~ '=' ~ value ~ '&' %}
+        {% if currentPage > 1 %}
+            <a href="?{{ queryString }}page={{ currentPage - 1 }}">Previous</a>
         {% endif %}
-    {% endfor %}
-
-    {% if currentPage > 1 %}
-        <a href="?{{ queryString }}page={{ currentPage - 1 }}">Previous</a>
-    {% endif %}
-    {% if currentPage < totalPages %}
-        <a href="?{{ queryString }}page={{ currentPage + 1 }}">Next</a>
-    {% endif %}
-</div>
+        {% if currentPage < totalPages %}
+            <a href="?{{ queryString }}page={{ currentPage + 1 }}">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
 
 {% if static %}
     {% for score in scores %}
